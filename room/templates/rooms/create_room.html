@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Room</title>
+    <style>
+        /* Add your styles here */
+    </style>
+</head>
+<body>
+    <h1>Create a Room</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <div>
+            <label for="room_name">Room Name:</label>
+            <input type="text" id="room_name" name="room_name" required>
+        </div>
+        <div>
+            <label for="target_word">Target Word:</label>
+            <input type="text" id="target_word" name="target_word" required>
+        </div>
+        <button type="submit">Create Room</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!-- chat_room.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room - {{ room.name }}</title>
+</head>
+<body>
+    <h1>Welcome to {{ room.name }}</h1>
+    <div id="chat-log"></div>
+
+    <input type="text" id="message-input" placeholder="Type a message..." />
+    <button id="send-message">Send</button>
+
+    <script>
+        const roomName = "{{ room.name }}";
+        const chatLog = document.getElementById('chat-log');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-message');
+
+        // Create WebSocket connection
+        const socket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + roomName + '/');
+
+        // Listen for messages
+        socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            const message = data['message'];
+            const username = data['user'];
+            const timestamp = data['timestamp'];
+
+            const messageElement = document.createElement('div');
+            messageElement.innerHTML = `<strong>${username}</strong> [${timestamp}]: ${message}`;
+            chatLog.appendChild(messageElement);
+        };
+
+        // Send message
+        sendButton.addEventListener('click', function() {
+            const message = messageInput.value;
+            if (message) {
+                socket.send(JSON.stringify({
+                    'message': message,
+                    'username': 'User',  // You can dynamically fetch the actual username
+                }));
+                messageInput.value = '';
+            }
+        });
+    </script>
+</body>
+</html>

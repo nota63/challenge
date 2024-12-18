@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room - {{ room_name }}</title>
+
+    <!-- Import Google Fonts -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400&display=swap" rel="stylesheet">
+    
+    <!-- Import Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+            margin: 0;
+            padding: 10px;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            font-size: 20px;
+            color: #007bff;
+        }
+
+        #chat-log {
+            border-radius: 12px;
+            height: 700px;
+            width: 100%;
+            max-width: 1000px;
+            overflow-y: auto;
+            padding: 10px;
+            background-color: #ffffff;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            margin: 8px 0;
+            padding: 8px;
+            border-radius: 10px;
+            font-size: 0.75em;
+            line-height: 1.3;
+            max-width: 65%;
+            word-wrap: break-word;
+            display: flex;
+            justify-content: space-between;
+        }
+
+
+
+        .message.me {
+            background: linear-gradient(135deg, #86efac, #34d399);
+            color: #fff;
+            align-self: flex-end;
+        }
+
+        .message.other {
+            background: linear-gradient(135deg, #e8eaf6, #d1d5db);
+            align-self: flex-start;
+        }
+
+        .timestamp {
+            font-size: 0.7em;
+            color: #666;
+            margin-left: 10px;
+            display: block;
+        }
+
+        #user-list {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    width: 140px; /* Reduced width for compact look */
+    padding: 2px;
+    border-radius: 5px;
+    background-color: #f7f7f7;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+    max-height: 220px; /* Fixed height */
+    overflow-y: auto; /* Enable vertical scrolling */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+    border-left: 3px solid #6a1b9a; /* Premium accent color */
+    font-size: 0.7em; /* Reduced font size */
+    transition: all 0.2s ease-in-out;
+}
+
+/* Add a subtle hover effect */
+#user-list:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Style individual user items */
+#user-list .user-item {
+    padding: 3px;
+    margin: 2px 0;
+    border-radius: 4px;
+    background-color: #ffffff;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: background-color 0.1s ease-in-out;
+    font-size: 0.55em;
+    white-space: nowrap;
+}
+
+/* Hover effect for user items */
+#user-list .user-item:hover {
+    background-color: #e1e4f2;
+}
+
+/* User icon styling */
+#user-list .user-icon {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background-color: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #555;
+    font-size: 0.45em;
+}
+
+/* Ultra-thin premium scrollbar styling */
+#user-list::-webkit-scrollbar {
+    width: 2px; /* Thinnest possible width */
+}
+
+#user-list::-webkit-scrollbar-thumb {
+    background-color: #6a1b9a; /* Premium purple color */
+    border-radius: 10px;
+}
+
+#user-list::-webkit-scrollbar-thumb:hover {
+    background-color: #8e24aa; /* Slightly lighter on hover for contrast */
+}
+
+#user-list::-webkit-scrollbar-track {
+    background-color: #f0f0f0;
+}
+
+        #user-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #user-list::-webkit-scrollbar-thumb {
+            background-color: #ccc;
+            border-radius: 10px;
+        }
+
+        h3 {
+            font-size: 16px;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+
+        /* User online/offline tag */
+        .user-status {
+            font-size: 0.8em;
+            margin-left: 5px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            color: #fff;
+        }
+
+        .online {
+            background-color: #28a745;
+        }
+
+        .offline {
+            background-color: #dc3545;
+        }
+
+        #chat-message-input {
+            width: calc(100% - 90px);
+            padding: 8px;
+            border-radius: 20px;
+            border: 1px solid #ccc;
+            margin-right: 10px;
+            font-size: 0.9em;
+        }
+
+        #chat-message-submit {
+            padding: 8px 14px;
+            border-radius: 20px;
+            background-color: #007bff;
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        #chat-message-submit:hover {
+            background-color: #0056b3;
+        }
+
+        #info {
+            font-size: 0.8em;
+            color: #6c757d;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .typing-indicator {
+            font-style: italic;
+            color: #007bff;
+            margin-top: 5px;
+            display: none;
+        }
+
+        footer {
+            margin-top: 10px;
+            font-size: 0.75em;
+            color: #888;
+            text-align: center;
+        }
+
+        /* Welcome animation */
+        @keyframes welcome-animation {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .welcome-message {
+            animation: welcome-animation 1s ease-in-out;
+            font-size: 0.9em;
+            color: #007bff;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+
+        .room {
+    font-family: 'Poppins', sans-serif; /* Use Google Font */
+    font-size: 0.9em; /* Even more compact size */
+    color: #4a148c; /* Premium deep purple color */
+    font-weight: 500; /* Medium weight for a premium look */
+    margin: 10px 0;
+    padding: 5px;
+    text-align: center; /* Center align for emphasis */
+    letter-spacing: 0.5px; /* Slight letter spacing for clarity */
+    text-transform: uppercase; /* Optional: Make text uppercase for a bold look */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px; /* Space between icon and text */
+    background: linear-gradient(135deg, #6a1b9a, #8e24aa); /* Gradient effect */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; /* Gradient text */
+    transition: all 0.3s ease-in-out;
+}
+
+/* Add a room icon */
+.room i {
+    font-size: 1.2em; /* Icon size */
+    color: #4a148c; /* Matching color for the icon */
+    transition: color 0.3s ease-in-out;
+}
+
+/* Optional: Hover effect for extra flair */
+.room:hover {
+    letter-spacing: 1px;
+    color: #6a1b9a; /* Change text color on hover */
+}
+
+.room:hover i {
+    color: #8e24aa; /* Icon color change on hover */
+}
+
+ /* General Styling for the Container */
+ #set-target-word, #room-link {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 10px 0;
+        padding: 8px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        font-size: 12px;
+        position: absolute; /* Position both elements absolutely */
+        top: 10px;           /* Align to the top */
+        right: 10px;         /* Align to the right */
+        z-index: 10;         /* Ensure it's on top of other elements */
+    }
+
+    /* Label Styling */
+    label {
+        font-size: 14px;
+        font-weight: bold;
+        color: #333;
+        margin-right: 10px;
+    }
+
+    /* Target Word Input Field Styling */
+    #target-word {
+        width: 100px;  /* Reduced width */
+        padding: 8px;
+        font-size: 12px;
+        border: 2px solid #ddd;
+        border-radius: 4px;
+        transition: border-color 0.3s ease;
+    }
+
+    #target-word:focus {
+        border-color: #007bff;
+        outline: none;
+    }
+
+    /* Target Word Button Styling */
+    #set-target-word-btn {
+        background-color: #007bff;
+        color: white;
+        padding: 6px 10px;  /* Reduced padding */
+        font-size: 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    #set-target-word-btn:hover {
+        background-color: #0056b3;
+    }
+
+    /* Room Link Styling */
+    #room-link {
+        width: 12px;  /* Reduced width */
+        padding: 6px;
+        font-size: 12px;
+        border: 2px solid #ddd;
+        border-radius: 4px;
+        background-color: #f0f0f0;
+        color: transparent; /* Hides the link text */
+        cursor: not-allowed;
+        pointer-events: none;
+        box-sizing: border-box;
+    }
+
+    /* Room Link Button Styling */
+    #copy-button {
+        background-color: #28a745;
+        color: white;
+        padding: 6px 12px;  /* Reduced padding */
+        font-size: 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    #copy-button:hover {
+        background-color: #218838;
+    }
+
+    /* Optional Alert Styling */
+    .alert {
+        color: #28a745;
+        font-size: 12px;
+        font-weight: bold;
+        margin-top: 10px;
+    }
+    </style>
+</head>
+<body>
+    <h1 class="room">
+        <i class="fas fa-home"></i> Room: {{ room_name }}
+    </h1>
+
+
+    <!-- option to set targeted word -->
+
+
+
+  <!-- Check if the logged-in user is the room creator -->
+{% if room and request.user == room.created_by %}
+<div id="set-target-word">
+    <label for="target-word">Set Target Word:</label>
+    <input type="text" id="target-word" placeholder="Enter target word" 
+       {% if room.target_word %} style="display: none;" {% else %} style="display: block;" {% endif %} />
+
+    <button id="set-target-word-btn">
+        {% if room.target_word %}Remove Target Word{% else %}Set Target Word{% endif %}
+    </button>
+</div>
+
+<!-- Challenge Buttons -->
+<div id="challenge-buttons" style="display: none;">
+    <button id="start-challenge-btn">Start Challenge</button>
+    <button id="stop-challenge-btn" style="display: none;">Stop Challenge</button>
+    <button id="pause-challenge-btn" style="display: none;">Pause Challenge</button>
+    <button id="resume-challenge-btn" style="display: none;">Resume Challenge</button>
+</div>
+{% endif %}
+
+
+ {% if room and request.user == room.created_by %}
+ <div>
+     <input type="text" id="room-link" value="{{ room_link }}" readonly>
+     <button id="copy-button">Copy Link</button>
+ </div>
+ 
+ <script>
+     document.getElementById('copy-button').addEventListener('click', function() {
+         var copyText = document.getElementById('room-link');
+         
+         // Using the Clipboard API for better support
+         navigator.clipboard.writeText(copyText.value).then(function() {
+             alert("Room link copied: " + copyText.value);
+         }).catch(function(err) {
+             console.error("Error copying text: ", err);
+             alert("Failed to copy the link.");
+         });
+     });
+ </script>
+ {% endif %}
+ 
+ <!-- users leaderboard -->
+
+
+ <h3>Leaderboard</h3>
+ <ul id="leaderboard">
+     <!-- Users and their points will be listed here -->
+ </ul>
+ 
+    
+
+    <div id="user-list">
+        <h3><i class="fas fa-users"></i> Users in the Room</h3>
+        <ul id="users">
+            <!-- User list will be dynamically populated here -->
+        </ul>
+    </div>
+
+    <div id="chat-log"></div>
+    <div class="typing-indicator" id="typing-indicator"></div>
+
+    <div style="display: flex; align-items: center; margin-top: 8px;">
+        <input id="chat-message-input" type="text" size="100" placeholder="Type your message...">
+        <button id="chat-message-submit"><i class="fas fa-paper-plane"></i></button>
+    </div>
+
+    <div id="info">
+        <p>Messages are end-to-end encrypted for your privacy.</p>
+        <p><i class="fas fa-lock"></i> Your chat is secure!</p>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Calendar +. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const roomName = "{{ room_name }}";
+        const chatSocket = new WebSocket(
+            'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
+        );
+    
+        const userList = document.getElementById('users');
+        const leaderboardList = document.getElementById('leaderboard'); // Container to display leaderboard
+        let competitionEnded = false; // Flag to check if the competition has ended
+        let typingTimeout; // To manage typing indicator
+    
+        // Function to get current time for message timestamp
+        function getCurrentTime() {
+            const now = new Date();
+            return now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0');
+        }
+    
+        // Fetch and update leaderboard
+        function updateLeaderboard() {
+            fetch("{% url 'get_user_points' room_name=room.room_name %}", {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}', // CSRF token for security
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.points_data) {
+                    // Clear the current leaderboard
+                    leaderboardList.innerHTML = '';
+    
+                    // Populate the leaderboard with user points data
+                    data.points_data.forEach(user => {
+                        const leaderboardItem = document.createElement('li');
+                        leaderboardItem.textContent = `${user.username}: ${user.points} points`;
+                        leaderboardList.appendChild(leaderboardItem);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching leaderboard:', error);
+            });
+        }
+    
+        // Handle WebSocket messages
+        chatSocket.onopen = function() {
+            console.log('WebSocket connection established');
+        };
+    
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+    
+            // Handle incoming messages
+            if (data.message) {
+                const chatLog = document.getElementById('chat-log');
+    
+                if (data.competition_ended) {
+                    const competitionMessage = document.createElement('div');
+                    competitionMessage.classList.add('competition-ended');
+                    competitionMessage.textContent = "Competition has ended! Thank you for participating.";
+                    chatLog.appendChild(competitionMessage);
+                    competitionEnded = true;
+                    return;
+                }
+    
+                if (competitionEnded) {
+                    alert("Competition has ended. No more messages can be sent.");
+                    return;
+                }
+    
+                const messageType = data.email === "{{ request.user.username }}" ? 'me' : 'other';
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message', messageType);
+    
+                if (data.points_awarded) {
+                    messageElement.innerHTML = `${data.email}: ${data.message} (You earned ${data.points_awarded} points!) <span class="timestamp">${getCurrentTime()}</span>`;
+                } else {
+                    messageElement.innerHTML = `${data.email}: ${data.message} <span class="timestamp">${getCurrentTime()}</span>`;
+                }
+    
+                chatLog.appendChild(messageElement);
+                updateLeaderboard(); // Update leaderboard after receiving new message
+            }
+    
+            // Handle user joining
+            if (data.user_joined) {
+                const welcomeMessage = document.createElement('div');
+                welcomeMessage.classList.add('welcome-message');
+                welcomeMessage.textContent = `${data.email} has joined the room!`;
+                document.getElementById('chat-log').appendChild(welcomeMessage);
+    
+                const userElement = document.createElement('li');
+                userElement.textContent = data.email + ' ';
+                const statusElement = document.createElement('span');
+                statusElement.classList.add('user-status', 'online');
+                statusElement.textContent = 'Online';
+                userElement.appendChild(statusElement);
+                userList.appendChild(userElement);
+            }
+    
+            // Handle user leaving
+            if (data.user_left) {
+                const leaveMessage = document.createElement('div');
+                leaveMessage.classList.add('message');
+                leaveMessage.textContent = `${data.email} has left the room.`;
+                document.getElementById('chat-log').appendChild(leaveMessage);
+    
+                const userItems = userList.getElementsByTagName('li');
+                for (let i = 0; i < userItems.length; i++) {
+                    if (userItems[i].textContent.includes(data.email)) {
+                        userList.removeChild(userItems[i]);
+                        break;
+                    }
+                }
+            }
+    
+            // Handle typing indicator
+            if (data.typing) {
+                const typingIndicator = document.getElementById('typing-indicator');
+                typingIndicator.textContent = data.typing;
+                typingIndicator.style.display = 'block';
+                clearTimeout(typingTimeout); // Clear any previous typing timeout
+                typingTimeout = setTimeout(() => {
+                    typingIndicator.style.display = 'none';
+                }, 3000); // Hide typing indicator after 3 seconds
+            }
+        };
+    
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+    
+        document.getElementById('chat-message-input').focus();
+    
+        document.getElementById('chat-message-input').onkeyup = function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+    
+            // Send typing indicator with a small delay after keyup
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                chatSocket.send(JSON.stringify({
+                    'typing': "{{ request.user.username }} is typing..."
+                }));
+            }, 500); // Send after 500ms of inactivity
+        };
+    
+        document.getElementById('chat-message-submit').onclick = function(e) {
+            sendMessage();
+        };
+    
+        function sendMessage() {
+            if (competitionEnded) {
+                alert("Competition has ended. No more messages can be sent.");
+                return;
+            }
+    
+            const messageInputDom = document.getElementById('chat-message-input');
+            const message = messageInputDom.value;
+    
+            chatSocket.send(JSON.stringify({
+                'message': message,
+                'username': "{{ request.user.first_name }}",
+            }));
+            messageInputDom.value = '';
+        }
+
+        
+    // Add event listener to the "Set Target Word" button
+document.getElementById('set-target-word-btn').onclick = function () {
+    const targetWordInput = document.getElementById('target-word');
+    const targetWord = targetWordInput.value.trim();
+    const isSettingWord = targetWordInput.style.display !== 'none'; // Check if we are setting or removing
+
+    // Prepare the request payload
+    const payload = isSettingWord
+        ? { 'target_word': targetWord }  // Send target word to set
+        : {};  // Empty payload means remove the word
+
+    // Send the AJAX request
+    fetch("{% url 'set_target_word' room_name=room.room_name %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify(payload),
+    })
+    .then((response) => response.json())
+    .then((data) => {
+        if (data.success) {
+            if (isSettingWord) {
+                alert('Target word set successfully!');
+                // Update button text to "Remove Target Word"
+                document.getElementById('set-target-word-btn').textContent = 'Remove Target Word';
+                targetWordInput.style.display = 'none'; // Hide input field after setting the word
+            } else {
+                alert('Target word removed successfully!');
+                // Update button text to "Set Target Word"
+                document.getElementById('set-target-word-btn').textContent = 'Set Target Word';
+                targetWordInput.style.display = 'block'; // Show input field
+                targetWordInput.value = ''; // Clear the input field
+            }
+
+            // Show the Start Challenge button after setting the word
+            if (isSettingWord) {
+                document.getElementById('challenge-buttons').style.display = 'block';
+            } else {
+                document.getElementById('challenge-buttons').style.display = 'none';
+            }
+        } else {
+            alert(data.error || 'An error occurred.');
+        }
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+        alert('An unexpected error occurred.');
+    });
+};
+
+// Add event listener to "Start Challenge" button
+// Handle Start Challenge button
+document.getElementById('start-challenge-btn').onclick = function () {
+    fetch("{% url 'start_stop_challenge' room_id=room.id %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify({
+            'action': 'start'
+        }),
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Challenge has started!');
+                // Show Pause and Stop buttons, hide Start button
+                document.getElementById('start-challenge-btn').style.display = 'none';
+                document.getElementById('pause-challenge-btn').style.display = 'inline-block';
+                document.getElementById('stop-challenge-btn').style.display = 'inline-block';
+            } else {
+                alert(data.error || 'Error starting challenge!');
+            }
+        })
+        .catch(error => {
+            alert('An error occurred. Please try again.');
+            console.error(error);
+        });
+};
+
+// Handle Pause Challenge button
+document.getElementById('pause-challenge-btn').onclick = function () {
+    fetch("{% url 'start_stop_challenge' room_id=room.id %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify({
+            'action': 'pause'
+        }),
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Challenge has been paused!');
+                // Show Resume button, hide Pause and Stop buttons
+                document.getElementById('pause-challenge-btn').style.display = 'none';
+                document.getElementById('resume-challenge-btn').style.display = 'inline-block';
+                document.getElementById('stop-challenge-btn').style.display = 'none';
+            } else {
+                alert(data.error || 'Error pausing challenge!');
+            }
+        })
+        .catch(error => {
+            alert('An error occurred. Please try again.');
+            console.error(error);
+        });
+};
+
+// Handle Resume Challenge button
+document.getElementById('resume-challenge-btn').onclick = function () {
+    fetch("{% url 'start_stop_challenge' room_id=room.id %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify({
+            'action': 'resume'
+        }),
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Challenge has resumed!');
+                // Show Pause and Stop buttons, hide Resume button
+                document.getElementById('pause-challenge-btn').style.display = 'inline-block';
+                document.getElementById('resume-challenge-btn').style.display = 'none';
+                document.getElementById('stop-challenge-btn').style.display = 'inline-block';
+            } else {
+                alert(data.error || 'Error resuming challenge!');
+            }
+        })
+        .catch(error => {
+            alert('An error occurred. Please try again.');
+            console.error(error);
+        });
+};
+
+// Handle Stop Challenge button
+document.getElementById('stop-challenge-btn').onclick = function () {
+    fetch("{% url 'start_stop_challenge' room_id=room.id %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify({
+            'action': 'stop'
+        }),
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Challenge has been stopped!');
+                // Show Start button, hide Pause, Resume, and Stop buttons
+                document.getElementById('start-challenge-btn').style.display = 'inline-block';
+                document.getElementById('pause-challenge-btn').style.display = 'none';
+                document.getElementById('resume-challenge-btn').style.display = 'none';
+                document.getElementById('stop-challenge-btn').style.display = 'none';
+            } else {
+                alert(data.error || 'Error stopping challenge!');
+            }
+        })
+        .catch(error => {
+            alert('An error occurred. Please try again.');
+            console.error(error);
+        });
+};
+
+    
+        // Initial leaderboard update when the page loads
+        updateLeaderboard();
+    </script>
+</body>
+</html>
+
