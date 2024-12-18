@@ -133,3 +133,15 @@ CHANNEL_LAYERS = {
         'BACKEND': 'channels.layers.InMemoryChannelLayer',  
     },
 }
+
+
+
+
+# Pusher configurations
+
+# settings.py
+
+PUSHER_APP_ID = '1913521'
+PUSHER_KEY = '9133bc67b5a76db1931f'
+PUSHER_SECRET = 'ff29377849d5fd071119'
+PUSHER_CLUSTER = 'ap2'
